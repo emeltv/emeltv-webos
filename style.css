@@ -24,6 +24,11 @@ video {
 }
 
 .controls {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 20px !important;
   position: fixed !important;
   bottom: 30px !important;
   left: 50% !important;
@@ -39,6 +44,29 @@ video {
   height: auto !important;
 }
 
+.controls-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.7) 40%,
+    rgba(0, 0, 0, 0.3) 80%,
+    transparent 100%
+  );
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.controls-overlay.show {
+  opacity: 1;
+}
+
 .controls.show {
   visibility: visible !important;
 }
@@ -47,11 +75,11 @@ video {
   padding: 12px 20px !important;
   font-size: 30px !important;
   font-weight: bold !important;
-  border: none !important;
+  border: 5px solid white !important;
   border-radius: 8px !important;
   cursor: pointer !important;
-  background-color: rgba(255, 255, 255, 0.8) !important;
-  color: black !important;
+  background-color: transparent !important;
+  color: white !important;
   display: inline-block !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
@@ -107,4 +135,14 @@ video {
   transform: translateX(-50%);
   text-align: center;
   font-weight: normal;
+}
+
+.controls button:focus {
+  outline: none !important;
+  background-color: rgb(255, 255, 255) !important;
+  color: black !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.2s ease-in-out !important;
+  z-index: 200 !important;
 }

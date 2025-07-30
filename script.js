@@ -4,6 +4,7 @@ const playPauseBtn = document.getElementById("playPauseBtn");
 const startOverlay = document.getElementById("startOverlay");
 const startBtn = document.getElementById("startBtn");
 const controls = document.querySelector(".controls");
+const refreshBtn = document.getElementById("refreshBtn");
 
 const pauseText = "|| Pause";
 const playText = "▶ Play";
@@ -44,12 +45,26 @@ document.addEventListener("keydown", function (event) {
       // Optional: možeš dodati funkcionalnost za Back dugme
       break;
 
+    case 37: // Left arrow
+      event.preventDefault();
+      if (document.activeElement === refreshBtn) {
+        playPauseBtn.focus();
+      }
+      break;
+
+    case 39: // Right arrow
+      event.preventDefault();
+      if (document.activeElement === playPauseBtn) {
+        refreshBtn.focus();
+      }
+      break;
+
     case 13: // OK/Enter
       event.preventDefault();
       if (startOverlay.style.display !== "none") {
         startBtn.click();
       } else if (controls.classList.contains("show")) {
-        togglePlayPause();
+        document.activeElement.click(); // Aktiviraj trenutno selektovano dugme
       } else {
         showControlsTemporarily();
       }
@@ -87,11 +102,15 @@ let controlsTimeout;
 
 function showControlsTemporarily() {
   controls.classList.add("show");
+  document.querySelector(".controls-overlay")?.classList.add("show"); // ✅ Prikazi overlay
+
   playPauseBtn.textContent = video.paused ? playText : pauseText;
+  playPauseBtn.focus();
 
   clearTimeout(controlsTimeout);
   controlsTimeout = setTimeout(() => {
     controls.classList.remove("show");
+    document.querySelector(".controls-overlay")?.classList.remove("show"); // ✅ Sakrij overlay
   }, 3000);
 }
 
@@ -248,3 +267,5 @@ video.addEventListener("error", () => {
   console.error("Playback error detected, restarting stream.");
   refreshStream();
 });
+
+refreshBtn.addEventListener("click", refreshStream);
