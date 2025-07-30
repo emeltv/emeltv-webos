@@ -96,6 +96,28 @@ function showControlsTemporarily() {
 }
 
 function startStream() {
+  const savedStream = localStorage.getItem("cachedStream");
+
+  if (savedStream) {
+    try {
+      const parsed = JSON.parse(savedStream);
+      const expiresAt = new Date(parsed.expires_at);
+      const now = new Date();
+
+      if (now < expiresAt && parsed.stream_url) {
+        console.log("Using cached stream URL");
+        playStream(parsed.stream_url);
+        return;
+      } else {
+        console.log("Cached stream expired, removing it...");
+        localStorage.removeItem("cachedStream");
+      }
+    } catch (err) {
+      console.warn("Failed to parse cached stream data:", err);
+      localStorage.removeItem("cachedStream");
+    }
+  }
+
   fetch("https://api.ipify.org?format=json")
     .then((res) => res.json())
     .then((ipData) => {
@@ -116,10 +138,15 @@ function startStream() {
       return res.json();
     })
     .then((data) => {
-      console.log("Stream URL data received:", data);
-      const hlsUrl = data.stream_url;
-      console.log("Received stream URL:", hlsUrl);
-      playStream(hlsUrl);
+      const { stream_url, expires_at } = data;
+      console.log("Received stream URL:", stream_url);
+
+      localStorage.setItem(
+        "cachedStream",
+        JSON.stringify({ stream_url, expires_at })
+      );
+
+      playStream(stream_url);
     })
     .catch((err) => {
       console.error("Error during stream start:", err);
@@ -144,7 +171,7 @@ function retryLater() {
   setTimeout(startStream, 5000);
 }
 
-function playStream(hlsUrl) {
+async function playStream(hlsUrl) {
   if (hls) {
     hls.destroy();
     hls = null;
@@ -155,26 +182,30 @@ function playStream(hlsUrl) {
     hls.loadSource(hlsUrl);
     hls.attachMedia(video);
 
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    hls.on(Hls.Events.MANIFEST_PARSED, async () => {
       video.muted = false;
-      video
-        .play()
-        .then(setupControls)
-        .catch((err) => {
-          console.error("Autoplay error:", err);
+
+      try {
+        // ⏳ Čekaj da video bude spreman za puštanje
+        await new Promise((resolve) => {
+          video.oncanplay = resolve;
         });
+
+        await video.play();
+        setupControls();
+      } catch (err) {
+        console.error("Autoplay error:", err);
+      } finally {
+        video.oncanplay = null; // Očisti event
+      }
     });
 
     hls.on(Hls.Events.ERROR, (event, data) => {
       console.error("HLS error event:", event);
       console.error("HLS error data:", data);
 
-      if (data.details) {
-        console.error("HLS error details:", data.details);
-      }
-      if (data.response) {
-        console.error("HLS error response:", data.response);
-      }
+      if (data.details) console.error("HLS error details:", data.details);
+      if (data.response) console.error("HLS error response:", data.response);
 
       if (data.fatal) {
         console.warn("Fatal HLS error. Attempting to refresh stream...");
@@ -184,21 +215,26 @@ function playStream(hlsUrl) {
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = hlsUrl;
 
-    video.addEventListener("loadedmetadata", () => {
+    video.addEventListener("loadedmetadata", async () => {
       video.muted = false;
-      video
-        .play()
-        .then(setupControls)
-        .catch((err) => {
-          console.error("Autoplay error:", err);
+
+      try {
+        await new Promise((resolve) => {
+          video.oncanplay = resolve;
         });
+
+        await video.play();
+        setupControls();
+      } catch (err) {
+        console.error("Autoplay error:", err);
+      } finally {
+        video.oncanplay = null;
+      }
     });
 
     video.addEventListener("error", (e) => {
-      const error = video.error;
       console.error("Video element error event:", e);
-      console.error("Video playback error:", error);
-
+      console.error("Video playback error:", video.error);
       refreshStream();
     });
   } else {
