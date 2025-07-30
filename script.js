@@ -9,6 +9,8 @@ const refreshBtn = document.getElementById("refreshBtn");
 const pauseText = "|| Pause";
 const playText = "▶ Play";
 
+let controlsTimeout;
+
 let hls;
 
 startBtn.addEventListener("click", () => {
@@ -50,6 +52,7 @@ document.addEventListener("keydown", function (event) {
       if (document.activeElement === refreshBtn) {
         playPauseBtn.focus();
       }
+      resetControlsTimeout();
       break;
 
     case 39: // Right arrow
@@ -57,6 +60,7 @@ document.addEventListener("keydown", function (event) {
       if (document.activeElement === playPauseBtn) {
         refreshBtn.focus();
       }
+      resetControlsTimeout();
       break;
 
     case 13: // OK/Enter
@@ -98,20 +102,14 @@ if (typeof webOSSystem !== "undefined") {
   }
 }
 
-let controlsTimeout;
-
 function showControlsTemporarily() {
   controls.classList.add("show");
-  document.querySelector(".controls-overlay")?.classList.add("show"); // ✅ Prikazi overlay
+  document.querySelector(".controls-overlay")?.classList.add("show");
 
   playPauseBtn.textContent = video.paused ? playText : pauseText;
   playPauseBtn.focus();
 
-  clearTimeout(controlsTimeout);
-  controlsTimeout = setTimeout(() => {
-    controls.classList.remove("show");
-    document.querySelector(".controls-overlay")?.classList.remove("show"); // ✅ Sakrij overlay
-  }, 3000);
+  resetControlsTimeout();
 }
 
 function startStream() {
@@ -261,6 +259,14 @@ async function playStream(hlsUrl) {
       "HLS is not supported and video element can't play HLS directly."
     );
   }
+}
+
+function resetControlsTimeout() {
+  clearTimeout(controlsTimeout);
+  controlsTimeout = setTimeout(() => {
+    controls.classList.remove("show");
+    document.querySelector(".controls-overlay")?.classList.remove("show");
+  }, 3000);
 }
 
 video.addEventListener("error", () => {
