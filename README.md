@@ -8,4 +8,4 @@ A minimal overlay with playback and audio controls is included, along with a sta
 
 This application is intended for use with the EmelTV live broadcast stream and serves as a lightweight foundation for IPTV-style deployments on LG webOS TVs.
 
-A companion backend for stream management is available here: [EmelTV Backend](https://github.com/ensarhamzic/emeltv-webos-backend)
+A companion backend for stream management is available here: [EmelTV Backend](https://github.com/emeltv/emeltv-backend)
