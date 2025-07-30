@@ -5,6 +5,7 @@ const startOverlay = document.getElementById("startOverlay");
 const startBtn = document.getElementById("startBtn");
 const controls = document.querySelector(".controls");
 const refreshBtn = document.getElementById("refreshBtn");
+const loadingSpinner = document.getElementById("loadingSpinner");
 
 const pauseText = "|| Pause";
 const playText = "▶ Play";
@@ -173,6 +174,8 @@ function startStream() {
 
 function refreshStream() {
   console.log("Refreshing stream...");
+  loadingSpinner.classList.add("show"); // ✅ Prikaži spinner
+
   if (hls) {
     hls.destroy();
     hls = null;
@@ -180,7 +183,7 @@ function refreshStream() {
   video.pause();
   video.src = "";
   video.load();
-  startStream(); // Ponovo pokreni stream koristeći novu logiku
+  startStream();
 }
 
 function retryLater() {
@@ -194,6 +197,8 @@ async function playStream(hlsUrl) {
     hls = null;
   }
 
+  loadingSpinner.classList.add("show"); // ⏳ Prikaži spinner
+
   if (Hls.isSupported()) {
     hls = new Hls();
     hls.loadSource(hlsUrl);
@@ -203,7 +208,6 @@ async function playStream(hlsUrl) {
       video.muted = false;
 
       try {
-        // ⏳ Čekaj da video bude spreman za puštanje
         await new Promise((resolve) => {
           video.oncanplay = resolve;
         });
@@ -213,7 +217,8 @@ async function playStream(hlsUrl) {
       } catch (err) {
         console.error("Autoplay error:", err);
       } finally {
-        video.oncanplay = null; // Očisti event
+        video.oncanplay = null;
+        loadingSpinner.classList.remove("show");
       }
     });
 
@@ -226,6 +231,7 @@ async function playStream(hlsUrl) {
 
       if (data.fatal) {
         console.warn("Fatal HLS error. Attempting to refresh stream...");
+        loadingSpinner.classList.add("show"); // ✅ Ponovo prikaži spinner
         refreshStream();
       }
     });
@@ -246,18 +252,21 @@ async function playStream(hlsUrl) {
         console.error("Autoplay error:", err);
       } finally {
         video.oncanplay = null;
+        loadingSpinner.classList.remove("show"); // ✅ Sakrij spinner
       }
     });
 
     video.addEventListener("error", (e) => {
       console.error("Video element error event:", e);
       console.error("Video playback error:", video.error);
+      loadingSpinner.classList.add("show"); // ✅ Prikaži spinner
       refreshStream();
     });
   } else {
     console.error(
       "HLS is not supported and video element can't play HLS directly."
     );
+    loadingSpinner.classList.remove("show"); // ✅ Ukloni spinner u fallback slučaju
   }
 }
 
@@ -271,6 +280,7 @@ function resetControlsTimeout() {
 
 video.addEventListener("error", () => {
   console.error("Playback error detected, restarting stream.");
+  loadingSpinner.classList.add("show");
   refreshStream();
 });
 
