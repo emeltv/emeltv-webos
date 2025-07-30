@@ -1,0 +1,58 @@
+<!--
+Copyright (c) 2020-2023 LG Electronics Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Example Web App</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="script.js" defer></script>
+    <style type="text/css">
+        body {
+            width: 100%;
+            height: 100%;
+            background-color: #202020;
+        }
+
+        div {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            display: table;
+        }
+
+        h1 {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            color: #FFFFFF;
+        }
+    </style>
+    <script type="text/javascript">
+        window.onload = function () {
+            var bridge = new WebOSServiceBridge();
+        }
+    </script>
+</head>
+
+<body>
+    <div id="video-container">
+        <video id="video"></video>
+
+        <div id="startOverlay">
+            <img id="splashImage" src="assets/splash.jpg" alt="Splash" />
+            <button id="startBtn">Pritisnite OK za početak</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="playPauseBtn">▶ Play</button>
+    </div>
+</body>
+
+</html>
