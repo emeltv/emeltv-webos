@@ -96,13 +96,10 @@ function showControlsTemporarily() {
 }
 
 function startStream() {
-  console.log("Getting client IP...");
-
   fetch("https://api.ipify.org?format=json")
     .then((res) => res.json())
     .then((ipData) => {
       const clientIp = ipData.ip;
-      console.log("Client IP is:", clientIp);
 
       return fetch(`${BACKEND_BASE_URL}/stream-url?device=lg`, {
         headers: {
@@ -119,6 +116,7 @@ function startStream() {
       return res.json();
     })
     .then((data) => {
+      console.log("Stream URL data received:", data);
       const hlsUrl = data.stream_url;
       console.log("Received stream URL:", hlsUrl);
       playStream(hlsUrl);
@@ -142,8 +140,8 @@ function refreshStream() {
 }
 
 function retryLater() {
-  console.log("Retrying in 3 seconds…");
-  setTimeout(startStream, 3000);
+  console.log("Retrying in 5 seconds…");
+  setTimeout(startStream, 5000);
 }
 
 function playStream(hlsUrl) {
